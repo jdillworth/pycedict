@@ -150,19 +150,30 @@ def depinyinize(src):
     i = 0
     while i < len(src):
         c = src[i]
+
+        # see if this is a character with a tone mark
         if c in unmarked:
             letter, tone = unmarked[c]
+
+            # find every sound that includes this vowel
             possible_sounds = [s for s in ALL_SOUNDS if letter.lower() in s]
+
+            #try and match longest sounds first
             possible_sounds.sort(key=len)
             possible_sounds.reverse()
+
             sound = None
             so_far = u''.join(newstr).lower()
             for p in possible_sounds:
                 li = p.find(letter.lower())
                 before_match, after_match = p[:li], p[li+len(letter):]
 
-                if (len(before_match) == 0 or so_far[-len(before_match):] == before_match) and\
-                   (len(after_match) == 0 or lc[i+1:len(after_match)+i+1] == after_match):
+                # see if this sound's spelling matches what we have...
+                if ((len(before_match) == 0 # either there's nothing before the match
+                    or so_far[-len(before_match):] == before_match) # or the bit before the match is in our string
+                    and # ... AND
+                    # the bit after the match is 0 or matches our string
+                   (len(after_match) == 0 or lc[i+1:len(after_match)+i+1] == after_match)):
                     sound = p
                     break
             if sound:
@@ -176,7 +187,7 @@ def depinyinize(src):
                 newstr.append(letter)
                 i += 1
 
-        else:
+        else: # no tone mark, check for neutral tone ü
             if c == TONE_MARKS['U:'][5]:
                 newstr.append('U:')
             elif c == TONE_MARKS['u:'][5]:
