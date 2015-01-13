@@ -56,13 +56,13 @@ class TestIterCEDict(unittest.TestCase):
             d[ch] = variants
 
 class TestPinyin(unittest.TestCase):
+
     def test_pinyinize(self):
         self.assertEqual(pinyinize('xi3huan1'), u'xǐhuān')
         self.assertEqual(pinyinize('xing2 dong4'), u'xíng dòng')
         self.assertEqual(pinyinize('ni3 hao3'), u'nǐ hǎo')
         self.assertEqual(pinyinize('ni3 hao5'), u'nǐ hao')
         self.assertEqual(pinyinize('hua4'), u'huà')
-        self.assertEqual(pinyinize('lv4fa3'), u'lǜfǎ')
 
     def test_depinyinize(self):
         self.assertEqual('xi3huan1', depinyinize(u'xǐhuān'))
@@ -70,7 +70,17 @@ class TestPinyin(unittest.TestCase):
         self.assertEqual('ni3 hao3', depinyinize(u'nǐ hǎo'))
         self.assertEqual('ni3 hao', depinyinize(u'nǐ hao'))
         self.assertEqual('hua4', depinyinize(u'huà'))
-        self.assertEqual('lv4fa3', depinyinize(u'lǜfǎ'))
+
+    def test_double_dot(self):
+        self.assertEqual(pinyinize('lu:4fa3'), u'lǜfǎ')
+        self.assertEqual('lu:4fa3', depinyinize(u'lǜfǎ'))
+
+        self.assertEqual(pinyinize('lu:4fa3'), u'lǜfǎ')
+        self.assertEqual('lu:4fa3', depinyinize(u'lǜfǎ'))
+
+        self.assertEqual(pinyinize('nu:e4dai4'), u'nüèdài')
+        self.assertEqual('nu:e4dai4', depinyinize(u'nüèdài'))
+
 
 
 if __name__ == '__main__':
