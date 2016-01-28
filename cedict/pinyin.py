@@ -100,13 +100,13 @@ def pinyinize(src, raise_exception=False):
 
 
             try:
-                vowels = [v.decode('utf-8') for v in vowels]
+                vowels = [v for v in vowels]
                 vowels[tindex] = TONE_MARKS[vowels[tindex]][tone]
 
                 vowels = [v if ':' not in v else TONE_MARKS[v][5] for v in vowels]
 
                 vowels = u''.join(vowels)
-                return "%s%s%s" % (pre, vowels.encode('utf-8'), post)
+                return "%s%s%s" % (pre, vowels, post)
             except:
 #                import sys
 #                import traceback
@@ -116,10 +116,8 @@ def pinyinize(src, raise_exception=False):
                 if raise_exception:
                     raise
                 return m.group(0)
-        if type(src) == unicode:
-            src = src.encode('utf-8')
 
-        return PINYIN_RE.sub(replacer, src).decode('utf-8')
+        return PINYIN_RE.sub(replacer, src)
     except:
 #        import sys
 #        import traceback
@@ -129,15 +127,10 @@ def pinyinize(src, raise_exception=False):
         if raise_exception:
             raise
 
-        if type(src) != unicode:
-            src = src.decode('utf-8')
         return src
 
 def depinyinize(src):
     "Turns a source string like 'nǐ hǎo' into 'ni3 hao3'"
-
-    if type(src) == str:
-        src = src.decode('utf-8')
 
     unmarked = {}
     for k, v in TONE_MARKS.items():
@@ -178,7 +171,7 @@ def depinyinize(src):
                     break
             if sound:
 
-                newstr.append(letter.decode('utf-8'))
+                newstr.append(letter)
                 # preserve case, use chars from original string
                 newstr += list(src[i+1:len(after_match)+i+1])
                 newstr.append(u'%d' % tone)

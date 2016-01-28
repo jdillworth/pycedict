@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from StringIO import StringIO
-from cedict_parser import iter_cedict
-from pinyin import pinyinize, depinyinize
+from io import StringIO
+from cedict.cedict_parser import iter_cedict
+from cedict.pinyin import pinyinize, depinyinize
 
 
 SAMPLE_CEDICT = """齡 龄 [ling2] /age/length of experience, membership etc/
