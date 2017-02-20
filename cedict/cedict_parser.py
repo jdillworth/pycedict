@@ -1,13 +1,21 @@
 import os, gzip, re
 
-CEDICT_LINE_REGEX = re.compile(r'^(.*?)\s+(.*?)\s+\[(.*?)\]\s*(/.*/)\s*$', re.IGNORECASE)
+try:
+    unicode('hi')
+except NameError:
+    def unicode(s):
+        return s
+
+CEDICT_LINE_REGEX = re.compile(unicode(r'^(.*?)\s+(.*?)\s+\[(.*?)\]\s*(/.*/)\s*$'), re.IGNORECASE)
 
 VARIANT_DEF_REGEX = re.compile(
-    r'(?P<vartype>\w+)?\s*'
-    r'(variant of|see also)\s*'
-    r'(?P<ch>[^\\[a-z0-9\]\("]+?)\s*'
-    r'(?P<chs>\|[^\\[a-z0-9\]\("]+?)?\s*'
-    r'(?P<py>\[[-a-z0-9,: ]+\])?$', re.IGNORECASE)
+    unicode(
+        r'(?P<vartype>\w+)?\s*'
+        r'(variant of|see also)\s*'
+        r'(?P<ch>[^\\[a-z0-9\]\("]+?)\s*'
+        r'(?P<chs>\|[^\\[a-z0-9\]\("]+?)?\s*'
+        r'(?P<py>\[[-a-z0-9,: ]+\])?$'
+    ), re.IGNORECASE)
 
 def _find_variants(defs):
     defs2 = []
@@ -61,11 +69,11 @@ def _find_measure_words(chs, pinyin, defs):
             defs2.append(d)
         else:
             for mw in d[3:].split(','):
-                m = re.search(r'([^\|]+)(\|.+)?\[(.+)\]', mw)
+                m = re.search(unicode(r'([^\|]+)(\|.+)?\[(.+)\]'), mw)
                 if m is None:
                     # did not match???
 
-                    m = re.search(r'([^\|]+)(\|.+)?', mw)
+                    m = re.search(unicode(r'([^\|]+)(\|.+)?'), mw)
                     if not m:
                         # failed again without pinyin, giving up
                         continue
@@ -94,7 +102,7 @@ def iter_cedict(fileobj):
     for each line as
     (chinese-traditional, chinese-simplified, pinyin, definitions, variants, measure-words)
     """
-    for linenumber, line in enumerate(fileobj.readlines()):
+    for linenumber, line in enumerate(fileobj):
         line = line.strip()
 
         # skip comments
@@ -107,8 +115,8 @@ def iter_cedict(fileobj):
         ch, chs, num_pinyin, defs = m.groups()
 
         # translate u: into v
-        defs = re.sub(r'u:(\w)', r'v\1', defs)
-        num_pinyin = re.sub(r'u:(\w)', r'v\1', num_pinyin)
+        defs = re.sub(unicode(r'u:(\w)'), unicode(r'v\1'), defs)
+        num_pinyin = re.sub(unicode(r'u:(\w)'), unicode(r'v\1'), num_pinyin)
 
         defs = defs[1:-1].split('/')
         defs, mwords = _find_measure_words(chs, num_pinyin, defs)
