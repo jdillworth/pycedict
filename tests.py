@@ -5,14 +5,20 @@ from io import StringIO
 from cedict.cedict_parser import iter_cedict
 from cedict.pinyin import pinyinize, depinyinize
 
+try:
+    unicode('hi')
+except NameError:
+    def unicode(s, encoding):
+        return s
 
-SAMPLE_CEDICT = """齡 龄 [ling2] /age/length of experience, membership etc/
+
+SAMPLE_CEDICT = unicode("""齡 龄 [ling2] /age/length of experience, membership etc/
 齢 齢 [ling2] /Japanese variant of 齡|龄/
 咬 咬 [yao3] /to bite/to nip/
 齩 咬 [yao3] /variant of 咬[yao3]/
 麵包房 面包房 [mian4 bao1 fang2] /bakery/CL:家[jia1]/
 鮎 鲇 [nian2] /sheatfish (Parasilurus asotus)/oriental catfish/see also 鯰|鲶[nian2]/
-鯰 鲶 [nian2] /sheatfish (Parasilurus asotus)/oriental catfish/see also 鮎|鲇[nian2]/"""
+鯰 鲶 [nian2] /sheatfish (Parasilurus asotus)/oriental catfish/see also 鮎|鲇[nian2]/""", 'utf-8')
 
 
 class TestIterCEDict(unittest.TestCase):
