@@ -1,4 +1,4 @@
-import os, gzip, re
+import re
 
 try:
     unicode('hi')
@@ -17,6 +17,7 @@ VARIANT_DEF_REGEX = re.compile(
         r'(?P<py>\[[-a-z0-9,: ]+\])?$'
     ), re.IGNORECASE)
 
+
 def _find_variants(defs):
     defs2 = []
     variants = []
@@ -26,12 +27,12 @@ def _find_variants(defs):
             defs2.append(d)
         else:
             v = m.groupdict('')
-            if v['chs']: # chop off |
+            if v['chs']:  # chop off |
                 v['chs'] = v['chs'][1:]
-            else: # if no chs specified, same as ch
+            else:  # if no chs specified, same as ch
                 v['chs'] = v['ch']
 
-            if v['py']:# chop off [ ]
+            if v['py']:  # chop off [ ]
                 v['py'] = v['py'][1:-1]
 
             # see if there is anything invalid
@@ -87,13 +88,11 @@ def _find_measure_words(chs, pinyin, defs):
                 if not simp:
                     simp = trad
                 else:
-                    simp = simp[1:] # chop off pipe character
+                    simp = simp[1:]  # chop off pipe character
 
                 mwords.append((trad, simp, py))
 
-
     return defs2, mwords
-
 
 
 def iter_cedict(fileobj):
@@ -106,7 +105,8 @@ def iter_cedict(fileobj):
         line = line.strip()
 
         # skip comments
-        if re.search(r'^\s*#', line): continue
+        if re.search(r'^\s*#', line):
+            continue
 
         m = CEDICT_LINE_REGEX.search(line)
         if not m:

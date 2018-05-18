@@ -1,16 +1,116 @@
 # -*- coding: utf-8 -*-
 import re
 
-PINYIN_RE = re.compile(r'(([bcdfghjklmnpqrstwxyz]*)(u:an|u:|u:e|[aeiou]+)([bcdfghjklmnpqrstwxyz]*)|r)([1-5])', re.I)
 
+PINYIN_RE = re.compile(r'(([bcdfghjklmnpqrstwxyz]*)'
+        r'([aeiouv]+)([bcdfghjklmnpqrstwxyz]*)|r)([1-5])', re.I)
+
+
+INITIALS_TO_FINALS = {
+    '': {
+        'a', 'ai', 'an', 'ang', 'ao', 'e', 'ei', 'en', 'eng', 'er', 'o',
+        'ou', 'wa', 'wai', 'wan', 'wang', 'wei', 'wen', 'weng', 'wo', 'wu',
+        'ya', 'yan', 'yang', 'yao', 'ye', 'yi', 'yin', 'ying', 'yong',
+        'you', 'yu', 'yuan', 'yue', 'yun',
+    },
+    'b': {
+        'ba', 'bai', 'ban', 'bang', 'bao', 'bei', 'ben', 'beng', 'bi',
+        'bian', 'biao', 'bie', 'bin', 'bing', 'bo', 'bu',
+    },
+    'c': {
+        'ca', 'cai', 'can', 'cang', 'cao', 'ce', 'cei', 'cen', 'ceng',
+        'ci', 'cong', 'cou', 'cu', 'cuan', 'cui', 'cun', 'cuo',
+    },
+    'ch': {
+        'cha', 'chai', 'chan', 'chang', 'chao', 'che', 'chen', 'cheng',
+        'chi', 'chong', 'chou', 'chu', 'chua', 'chuai', 'chuan', 'chuang',
+        'chui', 'chun', 'chuo',
+    },
+    'd': {
+        'da', 'dai', 'dan', 'dang', 'dao', 'de', 'dei', 'den', 'deng', 'di',
+        'dian', 'diao', 'die', 'ding', 'diu', 'dong', 'dou', 'du', 'duan',
+        'dui', 'dun', 'duo',
+    },
+    'f': {'fang', 'fo', 'fen', 'fei', 'fan', 'fou', 'fa', 'fu', 'feng'},
+    'g': {
+        'ga', 'gai', 'gan', 'gang', 'gao', 'ge', 'gei', 'gen', 'geng',
+        'gong', 'gou', 'gu', 'gua', 'guai', 'guan', 'guang', 'gui', 'gun',
+        'guo',
+    },
+    'h': {
+        'ha', 'hai', 'han', 'hang', 'hao', 'he', 'hei', 'hen', 'heng',
+        'hong', 'hou', 'hu', 'hua', 'huai', 'huan', 'huang', 'hui', 'hun',
+        'huo',
+    },
+    'j': {
+        'ji', 'jia', 'jian', 'jiang', 'jiao', 'jie', 'jin', 'jing',
+       'jiong', 'jiu', 'ju', 'juan', 'jue', 'jun',
+    },
+    'k': {
+        'ka', 'kai', 'kan', 'kang', 'kao', 'ke', 'kei', 'ken', 'keng',
+        'kong', 'kou', 'ku', 'kua', 'kuai', 'kuan', 'kuang', 'kui', 'kun',
+        'kuo',
+    },
+    'l': {
+        'la', 'lai', 'lan', 'lang', 'lao', 'le', 'lei', 'leng', 'li',
+        'lia', 'lian', 'liang', 'liao', 'lie', 'lin', 'ling', 'liu', 'lo',
+        'long', 'lou', 'lu', 'lv', 'lve', 'luan', 'lun', 'luo',
+    },
+    'm': {
+        'ma', 'mai', 'man', 'mang', 'mao', 'me', 'mei', 'men', 'meng',
+        'mi', 'mian', 'miao', 'mie', 'min', 'ming', 'miu', 'mo', 'mou',
+        'mu',
+    },
+    'n': {
+        'nan', 'neng', 'nao', 'nen', 'na', 'nei', 'nang', 'ne', 'nai',
+    },
+    'p': {
+        'pa', 'pai', 'pan', 'pang', 'pao', 'pei', 'pen', 'peng', 'pi',
+        'pian', 'piao', 'pie', 'pin', 'ping', 'po', 'pou', 'pu',
+    },
+    'q': {
+        'qi', 'qia', 'qian', 'qiang', 'qiao', 'qie', 'qin', 'qing', 'qiong',
+        'qiu', 'qu', 'quan', 'que', 'qun',
+    },
+    'r': {
+        'ran', 'rang', 'rao', 're', 'ren', 'reng', 'ri', 'rong', 'rou',
+        'ru', 'rua', 'ruan', 'rui', 'run', 'ruo',
+    },
+    's': {
+        'sa', 'sai', 'san', 'sang', 'sao', 'se', 'sen', 'seng', 'si',
+        'song', 'sou', 'su', 'suan', 'sui', 'sun', 'suo',
+    },
+    'sh': {
+        'sha', 'shai', 'shan', 'shang', 'shao', 'she', 'shei', 'shen',
+        'sheng', 'shi', 'shou', 'shu', 'shua', 'shuai', 'shuan', 'shuang',
+        'shui', 'shun', 'shuo',
+    },
+    't': {
+        'ta', 'tai', 'tan', 'tang', 'tao', 'te', 'teng', 'ti', 'tian', 'tiao',
+        'tie', 'ting', 'tong', 'tou', 'tu', 'tuan', 'tui', 'tun', 'tuo',
+    },
+    'x': {
+        'xi', 'xia', 'xian', 'xiang', 'xiao', 'xie', 'xin', 'xing',
+        'xiong', 'xiu', 'xu', 'xuan', 'xue', 'xun',
+    },
+    'z': {
+        'za', 'zai', 'zan', 'zang', 'zao', 'ze', 'zei', 'zen', 'zeng', 'zi',
+        'zong', 'zou', 'zu', 'zuan', 'zui', 'zun', 'zuo',
+    },
+    'zh': {
+        'zha', 'zhai', 'zhan', 'zhang', 'zhao', 'zhe', 'zhei', 'zhen', 'zheng',
+        'zhi', 'zhong', 'zhou', 'zhu', 'zhua', 'zhuai', 'zhuan', 'zhuang', 'zhui',
+        'zhun', 'zhuo',
+    },
+}
 
 TONE_MARKS = {
-    'a':u'_āáǎàa',
-    'e':u'_ēéěèe',
-    'i':u'_īíǐìi',
-    'o':u'_ōóǒòo',
-    'u':u'_ūúǔùu',
-    'u:':u'_ǖǘǚǜü'
+    'a': u'_āáǎàa',
+    'e': u'_ēéěèe',
+    'i': u'_īíǐìi',
+    'o': u'_ōóǒòo',
+    'u': u'_ūúǔùu',
+    'v': u'_ǖǘǚǜü',
 }
 
 # use upper() to get the upper case versions
@@ -19,7 +119,7 @@ TONE_MARKS['E'] = TONE_MARKS['e'].upper()
 TONE_MARKS['I'] = TONE_MARKS['i'].upper()
 TONE_MARKS['O'] = TONE_MARKS['o'].upper()
 TONE_MARKS['U'] = TONE_MARKS['u'].upper()
-TONE_MARKS['U:'] = TONE_MARKS['u:'].upper()
+TONE_MARKS['V'] = TONE_MARKS['v'].upper()
 
 ALL_SOUNDS = set(['a', 'ai', 'an', 'ang', 'ao', 'ba', 'bai', 'ban', 'bang',
     'bao', 'bei', 'ben', 'beng', 'bi', 'bian', 'biao', 'bie', 'bin', 'bing',
@@ -39,42 +139,74 @@ ALL_SOUNDS = set(['a', 'ai', 'an', 'ang', 'ao', 'ba', 'bai', 'ban', 'bang',
     'kou', 'ku', 'kua', 'kuai', 'kuan', 'kuang', 'kui', 'kun', 'kuo', 'la',
     'lai', 'lan', 'lang', 'lao', 'le', 'lei', 'leng', 'li', 'lia', 'lian',
     'liang', 'liao', 'lie', 'lin', 'ling', 'liu', 'long', 'lou', 'lu', 'luan',
-    'lun', 'luo', 'lu:', 'lu:an', 'lu:e', 'ma', 'mai',     'man', 'mang', 'mao',
-    'me', 'mei', 'men', 'meng', 'mi', 'mian', 'miao',     'mie', 'min', 'ming',
-    'miou', 'mo', 'mou', 'mu', 'na', 'nai', 'nan',     'nang', 'nao', 'ne', 'nei',
-    'nen', 'neng', 'ni', 'nian', 'niang', 'niao',     'nie', 'nin', 'ning', 'niu',
-    'nong', 'nou', 'nu', 'nuan', 'nuo',     'nu:', 'nu:e', 'ou', 'pa', 'pai', 'pan',
-    'pang', 'pao', 'pei', 'pen',     'peng', 'pi', 'pian', 'piao', 'pie', 'pin',
-    'ping', 'po', 'pou', 'pu', 'qi',     'qia', 'qian', 'qiang', 'qiao', 'qie',
-    'qin', 'qing', 'qiong', 'qiu', 'qu',     'quan', 'que', 'qun', 'r', 'ran',
-    'rang', 'rao', 're', 'ren', 'reng', 'ri',     'rong', 'rou', 'ru', 'ruan',
-    'rui', 'run', 'ruo', 'sa', 'sai', 'san',     'sang', 'sao', 'se', 'sen', 'seng',
-    'sha', 'shai', 'shan', 'shang', 'shao',     'she', 'shei', 'shen', 'sheng',
-    'shi', 'shou', 'shu', 'shua', 'shuai',     'shuan', 'shuang', 'shui', 'shun',
-    'shuo', 'si', 'song', 'sou', 'su',     'suan', 'sui', 'sun', 'suo', 'ta', 'tai',
-    'tan', 'tang', 'tao', 'te',     'teng', 'ti', 'tian', 'tiao', 'tie', 'ting',
-    'tong', 'tou', 'tu', 'tuan',     'tui', 'tun', 'tuo', 'wa', 'wai', 'wan',
-    'wang', 'wei', 'wen', 'weng', 'wo',     'wu', 'xi', 'xia', 'xian', 'xiang',
-    'xiao', 'xie', 'xin', 'xing', 'xiong',     'xiu', 'xu', 'xuan', 'xue', 'xun',
-    'ya', 'yan', 'yang', 'yao', 'ye', 'yi',     'yin', 'ying', 'yong', 'you', 'yu',
-    'yuan', 'yue', 'yun', 'za', 'zai',     'zan', 'zang', 'zao', 'ze', 'zen',
-    'zeng', 'zha', 'zhai', 'zhan', 'zhang',     'zhao', 'zhe', 'zhen', 'zheng',
-    'zhi', 'zhong', 'zhou', 'zhu', 'zhua',     'zhuai', 'zhuan', 'zhuang', 'zhui',
-    'zhun', 'zhuo', 'zi', 'zong', 'zou',     'zu', 'zuan', 'zui', 'zun', 'zuo'])
+    'lun', 'luo', 'lv', 'lvan', 'lve', 'ma', 'mai', 'man', 'mang', 'mao',
+    'me', 'mei', 'men', 'meng', 'mi', 'mian', 'miao', 'mie', 'min', 'ming',
+    'miou', 'mo', 'mou', 'mu', 'na', 'nai', 'nan', 'nang', 'nao', 'ne', 'nei',
+    'nen', 'neng', 'ni', 'nian', 'niang', 'niao', 'nie', 'nin', 'ning', 'niu',
+    'nong', 'nou', 'nu', 'nuan', 'nuo', 'nv', 'nve', 'ou', 'pa', 'pai', 'pan',
+    'pang', 'pao', 'pei', 'pen', 'peng', 'pi', 'pian', 'piao', 'pie', 'pin',
+    'ping', 'po', 'pou', 'pu', 'qi', 'qia', 'qian', 'qiang', 'qiao', 'qie',
+    'qin', 'qing', 'qiong', 'qiu', 'qu', 'quan', 'que', 'qun', 'r', 'ran',
+    'rang', 'rao', 're', 'ren', 'reng', 'ri', 'rong', 'rou', 'ru', 'ruan',
+    'rui', 'run', 'ruo', 'sa', 'sai', 'san', 'sang', 'sao', 'se', 'sen', 'seng',
+    'sha', 'shai', 'shan', 'shang', 'shao', 'she', 'shei', 'shen', 'sheng',
+    'shi', 'shou', 'shu', 'shua', 'shuai', 'shuan', 'shuang', 'shui', 'shun',
+    'shuo', 'si', 'song', 'sou', 'su', 'suan', 'sui', 'sun', 'suo', 'ta', 'tai',
+    'tan', 'tang', 'tao', 'te', 'teng', 'ti', 'tian', 'tiao', 'tie', 'ting',
+    'tong', 'tou', 'tu', 'tuan', 'tui', 'tun', 'tuo', 'wa', 'wai', 'wan',
+    'wang', 'wei', 'wen', 'weng', 'wo', 'wu', 'xi', 'xia', 'xian', 'xiang',
+    'xiao', 'xie', 'xin', 'xing', 'xiong', 'xiu', 'xu', 'xuan', 'xue', 'xun',
+    'ya', 'yan', 'yang', 'yao', 'ye', 'yi', 'yin', 'ying', 'yong', 'you', 'yu',
+    'yuan', 'yue', 'yun', 'za', 'zai', 'zan', 'zang', 'zao', 'ze', 'zen',
+    'zeng', 'zha', 'zhai', 'zhan', 'zhang', 'zhao', 'zhe', 'zhen', 'zheng',
+    'zhi', 'zhong', 'zhou', 'zhu', 'zhua', 'zhuai', 'zhuan', 'zhuang', 'zhui',
+    'zhun', 'zhuo', 'zi', 'zong', 'zou', 'zu', 'zuan', 'zui', 'zun', 'zuo'])
 
+AMBIGUOUS_SOUND_SPELLINGS = {
+    'bian': 'bi an',
+    'bie': 'bi e',
+    'dian': 'di an',
+    'diao': 'di ao',
+    'die': 'di e',
+    'guan': 'gu an',
+    'jian': 'ji an',
+    'jiang': 'ji ang',
+    'jiao': 'ji ao',
+    'jie': 'ji e',
+    'jue': 'ju e',
+    'kuai': 'ku ai',
+    'lian': 'li an',
+    'liang': 'li ang',
+    'liao': 'li ao',
+    'luan': 'lu an',
+    'miou': 'mi ou',
+    'qian': 'qi an',
+    'qie': 'qi e',
+    'shuan': 'shu an',
+    'tian': 'ti an',
+    'tuan': 'tu an',
+    'xian': 'xi an',
+    'xie': 'xi e',
+    'yuan': 'yu an',
+    'yue': 'yu e',
+    'zuan': 'zu an',
+}
+
+
+SOUNDS_BY_LEN = {}
+for s in ALL_SOUNDS:
+    SOUNDS_BY_LEN.setdefault(len(s), set()).add(s)
 
 
 def pinyinize(src, raise_exception=False):
     "Turns a source string like 'ni3 hao3' into a utf-8 equivalent with tone marks"
 
+    src = src.replace('u:', 'v')
+
     try:
         def replacer(m):
             syllable, pre, vowels, post, tone = m.groups()
             vowels = list(vowels)
-            if ':' in vowels:
-                dot_dot_index = vowels.index(':')
-                vowels[dot_dot_index - 1] += vowels[dot_dot_index]
-                del vowels[dot_dot_index]
 
             if syllable.lower() == 'r' and tone == '5':
                 return syllable
@@ -93,41 +225,41 @@ def pinyinize(src, raise_exception=False):
                 tindex = v.index('a')
             elif 'e' in v:
                 tindex = v.index('e')
-            elif 'ou' == v: # rule 2
+            elif 'ou' == v:  # rule 2
                 tindex = 0
-            else: # rule 3
+            else:  # rule 3
                 tindex = len(v) - 1
 
-
             try:
-                vowels = [v for v in vowels]
+                vowels = [
+                    v if idx == tindex else TONE_MARKS[v][5]
+                    for idx, v in enumerate(vowels)]
                 vowels[tindex] = TONE_MARKS[vowels[tindex]][tone]
-
-                vowels = [v if ':' not in v else TONE_MARKS[v][5] for v in vowels]
 
                 vowels = u''.join(vowels)
                 return "%s%s%s" % (pre, vowels, post)
-            except:
-#                import sys
-#                import traceback
-#                typ, err, tb = sys.exc_info()
-#                traceback.print_tb(tb)
-#                print typ, err
+            except:  # noqa
+                # import sys
+                # import traceback
+                # typ, err, tb = sys.exc_info()
+                # traceback.print_tb(tb)
+                # print typ, err
                 if raise_exception:
                     raise
                 return m.group(0)
 
         return PINYIN_RE.sub(replacer, src)
-    except:
-#        import sys
-#        import traceback
-#        typ, err, tb = sys.exc_info()
-#        traceback.print_tb(tb)
-#        print typ, err, 'src=', repr(src)
+    except:  # noqa
+        # import sys
+        # import traceback
+        # typ, err, tb = sys.exc_info()
+        # traceback.print_tb(tb)
+        # print typ, err, 'src=', repr(src)
         if raise_exception:
             raise
 
         return src
+
 
 def depinyinize(src):
     "Turns a source string like 'nǐ hǎo' into 'ni3 hao3'"
@@ -135,8 +267,7 @@ def depinyinize(src):
     unmarked = {}
     for k, v in TONE_MARKS.items():
         for i, c in enumerate(v[1:5]):
-            unmarked[c] = (k, i+1)
-
+            unmarked[c] = (k, i + 1)
 
     newstr = []
     lc = src.lower()
@@ -151,7 +282,7 @@ def depinyinize(src):
             # find every sound that includes this vowel
             possible_sounds = [s for s in ALL_SOUNDS if letter.lower() in s]
 
-            #try and match longest sounds first
+            # try and match longest sounds first
             possible_sounds.sort(key=len)
             possible_sounds.reverse()
 
@@ -180,13 +311,60 @@ def depinyinize(src):
                 newstr.append(letter)
                 i += 1
 
-        else: # no tone mark, check for neutral tone ü
-            if c == TONE_MARKS['U:'][5]:
-                newstr.append('U:')
-            elif c == TONE_MARKS['u:'][5]:
-                newstr.append('u:')
+        else:  # no tone mark, check for neutral tone ü
+            if c == TONE_MARKS['V'][5]:
+                newstr.append('V')
+            elif c == TONE_MARKS['v'][5]:
+                newstr.append('v')
             else:
                 newstr.append(c)
             i += 1
 
     return u''.join(newstr)
+
+
+def syllabize(pinyin):
+    pinyin = pinyin.replace(' ', '')
+
+    min_len, max_len = min(SOUNDS_BY_LEN.keys()), max(SOUNDS_BY_LEN.keys())
+
+    syllables = []
+    found_syllable = True
+
+    while pinyin and found_syllable:
+        found_syllable = False
+
+        for ln in range(max_len, min_len - 1, -1):
+            if ln > len(pinyin):
+                continue
+            sounds = SOUNDS_BY_LEN.get(ln, set())
+            if pinyin[:ln].lower() in sounds:
+                pinyin, syllable = pinyin[ln:], pinyin[:ln]
+                if pinyin and pinyin[0] in '12345':
+                    syllable += pinyin[0]
+                    pinyin = pinyin[1:]
+
+                syllables.append(syllable)
+                found_syllable = True
+                break
+
+    if pinyin:
+        syllables.append(pinyin)
+
+    syllables = tuple(syllables)
+    valid_syllabifications = (syllables,)
+
+    for idx, syllable in enumerate(syllables):
+        if syllable in AMBIGUOUS_SOUND_SPELLINGS:
+            alt = AMBIGUOUS_SOUND_SPELLINGS[syllable]
+
+            new_choices = []
+            for vs in valid_syllabifications:
+                new_choices.append(vs[0:idx] + (alt,) + vs[idx + 1:])
+
+            valid_syllabifications += tuple(new_choices)
+
+    valid_syllabifications = list(valid_syllabifications)
+    valid_syllabifications.sort()
+
+    return tuple(' '.join(vs) for vs in valid_syllabifications)
