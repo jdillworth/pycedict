@@ -225,7 +225,7 @@ def pinyinize(src, raise_exception=False):
                 tindex = v.index('a')
             elif 'e' in v:
                 tindex = v.index('e')
-            elif 'ou' == v:  # rule 2
+            elif ['o', 'u'] == v:  # rule 2
                 tindex = 0
             else:  # rule 3
                 tindex = len(v) - 1
@@ -323,7 +323,7 @@ def depinyinize(src):
     return u''.join(newstr)
 
 
-def syllabize(pinyin):
+def syllabize(pinyin, neutral_tone_by_default=False):
     pinyin = pinyin.replace(' ', '')
 
     min_len, max_len = min(SOUNDS_BY_LEN.keys()), max(SOUNDS_BY_LEN.keys())
@@ -331,6 +331,7 @@ def syllabize(pinyin):
     syllables = []
     found_syllable = True
 
+    # keep chopping off the beginning of the string as long as it looks like pinyin
     while pinyin and found_syllable:
         found_syllable = False
 
@@ -339,10 +340,15 @@ def syllabize(pinyin):
                 continue
             sounds = SOUNDS_BY_LEN.get(ln, set())
             if pinyin[:ln].lower() in sounds:
-                pinyin, syllable = pinyin[ln:], pinyin[:ln]
+                syllable, pinyin = pinyin[:ln], pinyin[ln:]
+
+                # we chopped off the phonetic bit, did we just leave a tone
+                # number dangling on the front of the remaining string?
                 if pinyin and pinyin[0] in '12345':
                     syllable += pinyin[0]
                     pinyin = pinyin[1:]
+                elif neutral_tone_by_default:
+                    syllable += '5'
 
                 syllables.append(syllable)
                 found_syllable = True

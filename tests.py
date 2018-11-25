@@ -94,6 +94,7 @@ class TestPinyin(unittest.TestCase):
         self.assertEqual(pinyinize('ni3 hao3'), u'nǐ hǎo')
         self.assertEqual(pinyinize('ni3 hao5'), u'nǐ hao')
         self.assertEqual(pinyinize('hua4'), u'huà')
+        self.assertEqual(pinyinize('you3'), u'yǒu')
 
     def test_depinyinize(self):
         self.assertEqual('xi3huan1', depinyinize(u'xǐhuān'))
@@ -101,6 +102,7 @@ class TestPinyin(unittest.TestCase):
         self.assertEqual('ni3 hao3', depinyinize(u'nǐ hǎo'))
         self.assertEqual('ni3 hao', depinyinize(u'nǐ hao'))
         self.assertEqual('hua4', depinyinize(u'huà'))
+        self.assertEqual('you3', depinyinize(u'yǒu'))
 
     def test_double_dot(self):
         self.assertEqual(pinyinize('nve4dai4'), u'nüèdài')

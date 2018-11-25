@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='pycedict',
-      version='0.9.2',
+      version='0.9.4',
       description='A library for parsing CEDict and adding tone marks to pinyin',
       url='https://github.com/jdillworth/pycedict',
       author='Jeremy Dillworth',
