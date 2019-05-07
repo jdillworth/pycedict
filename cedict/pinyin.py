@@ -323,54 +323,50 @@ def depinyinize(src):
     return u''.join(newstr)
 
 
+def _find_syllabizations_from(so_far, full_pinyin, neutral_tone_by_default):
+    syllabizations = []
+
+    remainder = full_pinyin[len(''.join(so_far)):]
+
+    if remainder:
+        found_sound = False
+        for sound in ALL_SOUNDS:
+            if remainder.lower()[:len(sound)] == sound:
+                found_sound = True
+                to_try = [[remainder[:len(sound)]]]
+                if sound in AMBIGUOUS_SOUND_SPELLINGS:
+                    to_try.append(AMBIGUOUS_SOUND_SPELLINGS[sound].split())
+
+                if len(remainder) > len(sound) and remainder[len(sound)] in '12345':
+                    for i in range(len(to_try)):
+                        to_try[i][-1] += remainder[len(sound)]
+
+                for trial in to_try:
+                    syllabizations += _find_syllabizations_from(
+                        so_far + tuple(trial),
+                        full_pinyin,
+                        neutral_tone_by_default,
+                    )
+        if not found_sound:
+            if any(s[:len(remainder)] == remainder.lower() for s in ALL_SOUNDS):
+                so_far += (remainder,)
+                return [so_far]
+            else:
+                return []
+    else:
+        return [so_far]
+
+    return syllabizations
+
+
 def syllabize(pinyin, neutral_tone_by_default=False):
     pinyin = pinyin.replace(' ', '')
 
-    min_len, max_len = min(SOUNDS_BY_LEN.keys()), max(SOUNDS_BY_LEN.keys())
+    # find all founds that appear at the front
+    valid_syllabifications = _find_syllabizations_from(
+        (), pinyin, neutral_tone_by_default)
 
-    syllables = []
-    found_syllable = True
-
-    # keep chopping off the beginning of the string as long as it looks like pinyin
-    while pinyin and found_syllable:
-        found_syllable = False
-
-        for ln in range(max_len, min_len - 1, -1):
-            if ln > len(pinyin):
-                continue
-            sounds = SOUNDS_BY_LEN.get(ln, set())
-            if pinyin[:ln].lower() in sounds:
-                syllable, pinyin = pinyin[:ln], pinyin[ln:]
-
-                # we chopped off the phonetic bit, did we just leave a tone
-                # number dangling on the front of the remaining string?
-                if pinyin and pinyin[0] in '12345':
-                    syllable += pinyin[0]
-                    pinyin = pinyin[1:]
-                elif neutral_tone_by_default:
-                    syllable += '5'
-
-                syllables.append(syllable)
-                found_syllable = True
-                break
-
-    if pinyin:
-        syllables.append(pinyin)
-
-    syllables = tuple(syllables)
-    valid_syllabifications = (syllables,)
-
-    for idx, syllable in enumerate(syllables):
-        if syllable in AMBIGUOUS_SOUND_SPELLINGS:
-            alt = AMBIGUOUS_SOUND_SPELLINGS[syllable]
-
-            new_choices = []
-            for vs in valid_syllabifications:
-                new_choices.append(vs[0:idx] + (alt,) + vs[idx + 1:])
-
-            valid_syllabifications += tuple(new_choices)
-
-    valid_syllabifications = list(valid_syllabifications)
+    valid_syllabifications = list(set([' '.join(s) for s in valid_syllabifications]))
     valid_syllabifications.sort()
 
-    return tuple(' '.join(vs) for vs in valid_syllabifications)
+    return tuple(valid_syllabifications)

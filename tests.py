@@ -75,18 +75,23 @@ class TestIterCEDict(unittest.TestCase):
 class TestPinyin(unittest.TestCase):
 
     def test_syllabize_pinyin(self):
-        self.assertEqual(syllabize('xi3huan1'), ('xi3 huan1',))
-        self.assertEqual(syllabize('nve4dai4'), ('nve4 dai4',))
+        self.assertEqual(syllabize('keneng'),
+                ('ke nen g', 'ke neng', 'ken en g'))
+        self.assertEqual(syllabize('xi3huan1'),
+                ('xi3 hu an1', 'xi3 huan1'))
+        self.assertEqual(syllabize('nve4dai4'), ('nv e4 dai4', 'nve4 dai4'))
         self.assertEqual(syllabize('dax'), ('da x',))
         self.assertEqual(syllabize('nizuij'), ('ni zui j',))
         self.assertEqual(syllabize('nizuiji'), ('ni zui ji',))
-        self.assertEqual(syllabize('xixixiangg'), ('xi xi xiang g',))
+        self.assertEqual(syllabize('xixixiangg'),
+                ('xi xi xi ang g', 'xi xi xiang g'))
         self.assertEqual(syllabize('xianbian'), (
+            'xi an bi a n',
             'xi an bi an',
             'xi an bian',
+            'xian bi a n',
             'xian bi an',
-            'xian bian',
-        ))
+            'xian bian'))
 
     def test_pinyinize(self):
         self.assertEqual(pinyinize('xi3huan1'), u'xǐhuān')
