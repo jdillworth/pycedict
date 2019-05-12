@@ -105,21 +105,82 @@ INITIALS_TO_FINALS = {
 }
 
 TONE_MARKS = {
-    'a': u'_āáǎàa',
-    'e': u'_ēéěèe',
-    'i': u'_īíǐìi',
-    'o': u'_ōóǒòo',
-    'u': u'_ūúǔùu',
-    'v': u'_ǖǘǚǜü',
+    'a': '_āáǎàa',
+    'e': '_ēéěèe',
+    'i': '_īíǐìi',
+    'o': '_ōóǒòo',
+    'u': '_ūúǔùu',
+    'v': '_ǖǘǚǜü',
+    'A': '_ĀÁǍÀA',
+    'E': '_ĒÉĚÈE',
+    'I': '_ĪÍǏÌI',
+    'O': '_ŌÓǑÒO',
+    'U': '_ŪÚǓÙU',
+    'V': '_ǕǗǙǛÜ',
 }
 
-# use upper() to get the upper case versions
-TONE_MARKS['A'] = TONE_MARKS['a'].upper()
-TONE_MARKS['E'] = TONE_MARKS['e'].upper()
-TONE_MARKS['I'] = TONE_MARKS['i'].upper()
-TONE_MARKS['O'] = TONE_MARKS['o'].upper()
-TONE_MARKS['U'] = TONE_MARKS['u'].upper()
-TONE_MARKS['V'] = TONE_MARKS['v'].upper()
+SANS_TONE_MARKS = {
+    'ā': 'a',
+    'á': 'a',
+    'ǎ': 'a',
+    'à': 'a',
+    'a': 'a',
+    'ē': 'e',
+    'é': 'e',
+    'ě': 'e',
+    'è': 'e',
+    'e': 'e',
+    'ī': 'i',
+    'í': 'i',
+    'ǐ': 'i',
+    'ì': 'i',
+    'i': 'i',
+    'ō': 'o',
+    'ó': 'o',
+    'ǒ': 'o',
+    'ò': 'o',
+    'o': 'o',
+    'ū': 'u',
+    'ú': 'u',
+    'ǔ': 'u',
+    'ù': 'u',
+    'u': 'u',
+    'ǖ': 'v',
+    'ǘ': 'v',
+    'ǚ': 'v',
+    'ǜ': 'v',
+    'ü': 'v',
+    'Ā': 'A',
+    'Á': 'A',
+    'Ǎ': 'A',
+    'À': 'A',
+    'A': 'A',
+    'Ē': 'E',
+    'É': 'E',
+    'Ě': 'E',
+    'È': 'E',
+    'E': 'E',
+    'Ī': 'I',
+    'Í': 'I',
+    'Ǐ': 'I',
+    'Ì': 'I',
+    'I': 'I',
+    'Ō': 'O',
+    'Ó': 'O',
+    'Ǒ': 'O',
+    'Ò': 'O',
+    'O': 'O',
+    'Ū': 'U',
+    'Ú': 'U',
+    'Ǔ': 'U',
+    'Ù': 'U',
+    'U': 'U',
+    'Ǖ': 'V',
+    'Ǘ': 'V',
+    'Ǚ': 'V',
+    'Ǜ': 'V',
+    'Ü': 'V',
+}
 
 ALL_SOUNDS = set(['a', 'ai', 'an', 'ang', 'ao', 'ba', 'bai', 'ban', 'bang',
     'bao', 'bei', 'ben', 'beng', 'bi', 'bian', 'biao', 'bie', 'bin', 'bing',
@@ -264,63 +325,53 @@ def pinyinize(src, raise_exception=False):
 def depinyinize(src):
     "Turns a source string like 'nǐ hǎo' into 'ni3 hao3'"
 
-    unmarked = {}
-    for k, v in TONE_MARKS.items():
-        for i, c in enumerate(v[1:5]):
-            unmarked[c] = (k, i + 1)
+    src_sans_tones = ''.join([SANS_TONE_MARKS.get(c, c) for c in list(src)])
+    tones_found = len([ch for idx, ch in enumerate(src) if ch != src_sans_tones[idx]])
 
-    newstr = []
-    lc = src.lower()
-    i = 0
-    while i < len(src):
-        c = src[i]
+    if ' ' in src:
+        syllables = ' '.join(src_sans_tones.split())
+        spacer = ' '
+    else:
+        spacer = ''
+        syllables = []
+        syllabizations = syllabize(src_sans_tones)
+        tone_count_matches = [s for s in syllabizations if len(s.split()) == tones_found]
+        if tone_count_matches:
+            syllabizations = tone_count_matches
 
-        # see if this is a character with a tone mark
-        if c in unmarked:
-            letter, tone = unmarked[c]
+        # we'll use the first syllabization with no fragment on the end
+        for syllabization in syllabizations:
+            # was the end a fragment, if so don't use this
+            if syllabization.split()[-1].lower() not in ALL_SOUNDS:
+                continue
 
-            # find every sound that includes this vowel
-            possible_sounds = [s for s in ALL_SOUNDS if letter.lower() in s]
+            syllables = syllabization
+            break
 
-            # try and match longest sounds first
-            possible_sounds.sort(key=len)
-            possible_sounds.reverse()
+    if not syllables:
+        return src
 
-            sound = None
-            so_far = u''.join(newstr).lower()
-            for p in possible_sounds:
-                li = p.find(letter.lower())
-                before_match, after_match = p[:li], p[li+len(letter):]
+    src = src.replace(' ', '')
+    result = []
+    for syllable in syllables.split():
+        src_syllable = src[:len(syllable)]
+        src = src[len(syllable):]
 
-                # see if this sound's spelling matches what we have...
-                if ((len(before_match) == 0 # either there's nothing before the match
-                    or so_far[-len(before_match):] == before_match) # or the bit before the match is in our string
-                    and # ... AND
-                    # the bit after the match is 0 or matches our string
-                   (len(after_match) == 0 or lc[i+1:len(after_match)+i+1] == after_match)):
-                    sound = p
-                    break
-            if sound:
-
-                newstr.append(letter)
-                # preserve case, use chars from original string
-                newstr += list(src[i+1:len(after_match)+i+1])
-                newstr.append(u'%d' % tone)
-                i += len(after_match) + 1
+        tone = ''
+        for ch in src_syllable:
+            # look for char with tone mark, it won't match its sans-tone self
+            no_tone = SANS_TONE_MARKS.get(ch, ch)
+            alternative_match = TONE_MARKS[no_tone][5] if no_tone in TONE_MARKS else ch
+            if ch not in (no_tone, alternative_match):
+                tone = str(TONE_MARKS[no_tone].index(ch))
+                result.append(no_tone)
             else:
-                newstr.append(letter)
-                i += 1
+                result.append(no_tone)
 
-        else:  # no tone mark, check for neutral tone ü
-            if c == TONE_MARKS['V'][5]:
-                newstr.append('V')
-            elif c == TONE_MARKS['v'][5]:
-                newstr.append('v')
-            else:
-                newstr.append(c)
-            i += 1
+        result.append(tone)
+        result.append(spacer)
 
-    return u''.join(newstr)
+    return ''.join(result).rstrip()
 
 
 def _find_syllabizations_from(so_far, full_pinyin, neutral_tone_by_default):
