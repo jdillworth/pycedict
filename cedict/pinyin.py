@@ -5,6 +5,10 @@ import re
 PINYIN_RE = re.compile(r'(([bcdfghjklmnpqrstwxyz]*)'
         r'([aeiouv]+)([bcdfghjklmnpqrstwxyz]*)|r)([1-5])', re.I)
 
+UNATTACHED_RETROFLEX_RE = re.compile(r' r( |$)')
+
+ATTACHED_RETROFLEX = r'r\1'
+
 
 INITIALS_TO_FINALS = {
     '': {
@@ -267,10 +271,11 @@ def pinyinize(src, raise_exception=False):
     try:
         def replacer(m):
             syllable, pre, vowels, post, tone = m.groups()
-            vowels = list(vowels)
 
             if syllable.lower() == 'r' and tone == '5':
                 return syllable
+
+            vowels = list(vowels)
 
             tone = int(tone)
 
@@ -309,7 +314,7 @@ def pinyinize(src, raise_exception=False):
                     raise
                 return m.group(0)
 
-        return PINYIN_RE.sub(replacer, src)
+        return UNATTACHED_RETROFLEX_RE.sub(ATTACHED_RETROFLEX, PINYIN_RE.sub(replacer, src))
     except:  # noqa
         # import sys
         # import traceback
